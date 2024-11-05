@@ -1,0 +1,162 @@
+import java.util.Arrays;
+
+public class MaxHeap {
+
+    private int[] heap;
+    private int size;
+    private int capacity;
+
+    // Constructor para inicializar el heap
+    public MaxHeap(int capacity) {
+        this.capacity = capacity;
+        this.heap = new int[capacity];
+        this.size = 0;
+    }
+
+    // Método para obtener el índice del padre de un nodo
+    private int parent(int i) {
+        return (i - 1) / 2;
+    }
+
+    // Método para obtener el índice del hijo izquierdo de un nodo
+    private int leftChild(int i) {
+        return 2 * i + 1;
+    }
+
+    // Método para obtener el índice del hijo derecho de un nodo
+    private int rightChild(int i) {
+        return 2 * i + 2;
+    }
+
+    // Método para intercambiar dos elementos en el heap
+    private void swap(int i, int j) {
+        int temp = heap[i];
+        heap[i] = heap[j];
+        heap[j] = temp;
+    }
+
+    // Método para mantener la propiedad de heap (subir el valor al lugar correcto)
+    private void heapifyUp(int i) {
+        while (i > 0 && heap[parent(i)] < heap[i]) {
+            swap(i, parent(i));
+            i = parent(i);
+        }
+    }
+
+    // Método para mantener la propiedad de heap (bajar el valor al lugar correcto)
+    private void heapifyDown(int i) {
+        int left = leftChild(i);
+        int right = rightChild(i);
+        int largest = i;
+
+        // Si el hijo izquierdo es más grande que el nodo actual
+        if (left < size && heap[left] > heap[largest]) {
+            largest = left;
+        }
+
+        // Si el hijo derecho es más grande que el nodo actual
+        if (right < size && heap[right] > heap[largest]) {
+            largest = right;
+        }
+
+        // Si el nodo actual no es el mayor, intercambiarlo con el hijo mayor
+        if (largest != i) {
+            swap(i, largest);
+            heapifyDown(largest);
+        }
+    }
+
+    // Método para insertar un nuevo elemento en el heap
+    public void insert(int value) {
+        if (size == capacity) {
+            System.out.println("El heap está lleno");
+            return;
+        }
+        heap[size] = value;
+        size++;
+        heapifyUp(size - 1);
+    }
+
+    // Método para extraer el máximo valor del heap (raíz)
+    public int extractMax() {
+        if (size == 0) {
+            throw new IllegalStateException("El heap está vacío");
+        }
+        int max = heap[0];
+        heap[0] = heap[size - 1];
+        size--;
+        heapifyDown(0);
+        return max;
+    }
+
+    // Método para obtener el valor máximo sin extraerlo
+    public int getMax() {
+        if (size == 0) {
+            throw new IllegalStateException("El heap está vacío");
+        }
+        return heap[0];
+    }
+
+    // Método para ver el tamaño actual del heap
+    public int size() {
+        return size;
+    }
+
+    // Método para mostrar el heap (solo para depuración)
+    public void printHeap() {
+        System.out.println(Arrays.toString(Arrays.copyOf(heap, size)));
+    }
+
+    public static void main(String[] args) {
+        // Crear un MaxHeap con una capacidad de 10 elementos
+        MaxHeap maxHeap = new MaxHeap(10);
+
+        // Insertar elementos en el heap (como en una cola de prioridad)
+        maxHeap.insert(20);
+        maxHeap.insert(15);
+        maxHeap.insert(30);
+        maxHeap.insert(10);
+        maxHeap.insert(5);
+        maxHeap.insert(25);
+
+        // Mostrar el heap después de las inserciones
+        System.out.println("Heap después de inserciones:");
+        maxHeap.printHeap();
+
+        // Obtener el valor máximo (raíz del heap)
+        System.out.println("Valor máximo: " + maxHeap.getMax());
+
+        // Extraer el máximo (que es la raíz del heap)
+        System.out.println("Extrayendo el valor máximo: " + maxHeap.extractMax());
+
+        // Mostrar el heap después de extraer el máximo
+        System.out.println("Heap después de extraer el valor máximo:");
+        maxHeap.printHeap();
+
+        // Extraer el siguiente valor máximo
+        System.out.println("Extrayendo el siguiente valor máximo: " + maxHeap.extractMax());
+
+        // Mostrar el heap final
+        System.out.println("Heap final:");
+        maxHeap.printHeap();
+    }
+}
+//
+
+
+Explicación paso a paso:
+Definición de la Clase MaxHeap:
+
+La clase MaxHeap maneja la lógica del heap binario.
+Internamente usa un array para almacenar los valores y mantiene una propiedad especial de max-heap: el valor de cada nodo es mayor que el valor de sus hijos.
+Operaciones principales:
+
+insert(int value): Inserta un nuevo valor en el heap. Después de insertar el valor, se ajusta el heap usando heapifyUp para mantener la propiedad del max-heap.
+extractMax(): Extrae el valor máximo (raíz del heap). Después de la extracción, se ajusta el heap usando heapifyDown para restaurar la propiedad del max-heap.
+getMax(): Devuelve el valor máximo sin extraerlo.
+printHeap(): Muestra el estado actual del heap (esto es útil para depuración).
+En el método main():
+
+Se crea un MaxHeap con capacidad para 10 elementos.
+Se insertan varios valores en el heap.
+Se extraen los valores máximos y se imprime el estado del heap después de cada extracción.//
