@@ -1,0 +1,228 @@
+//Caso de Uso Integral: Sistema de Gestión de Rutas y Productos en una Ciudad Inteligente
+Imaginemos que tenemos una ciudad inteligente que cuenta con una red de estaciones de transporte (por ejemplo, estaciones de metro) y una lista de productos disponibles en diferentes tiendas. La tarea del sistema será encontrar rutas de transporte eficientes, gestionar inventarios de productos y usar diferentes técnicas de estructuras de datos para resolver problemas.
+
+Requisitos del sistema:
+Tablas Hash para almacenar y gestionar los productos (usando diferentes métodos de resolución de colisiones).
+Grafos para modelar las estaciones de metro y sus conexiones.
+Recorridos en el grafo (DFS y BFS) para explorar las rutas de las estaciones.
+Cálculo de caminos más cortos (Dijkstra) para encontrar la ruta más eficiente entre estaciones de metro.
+Árbol de Expansión Mínima (Prim) para determinar la infraestructura mínima de transporte.
+Hashing Universal y Perfecto para mejorar la eficiencia en la gestión de inventarios de productos.//
+
+Código en JAVA
+
+import java.util.*;
+
+// Clase para implementar tablas hash con hashing universal y perfecto
+class HashTable {
+    private String[] table;
+    private int size;
+    private Random rand = new Random();
+    private int a, b;
+
+    // Constructor con tamaño de tabla
+    public HashTable(int size) {
+        this.size = size;
+        this.table = new String[size];
+        this.a = rand.nextInt(size - 1) + 1;  // Genera un número aleatorio para "a"
+        this.b = rand.nextInt(size);  // Genera un número aleatorio para "b"
+    }
+
+    // Función hash universal
+    private int hash(String key) {
+        int hash = 0;
+        for (int i = 0; i < key.length(); i++) {
+            hash = (a * hash + key.charAt(i)) + b;
+        }
+        return Math.abs(hash) % size;
+    }
+
+    // Insertar un producto
+    public void insertar(String producto) {
+        int index = hash(producto);
+        if (table[index] != null) {
+            System.out.println("Colisión detectada al insertar " + producto);
+        } else {
+            table[index] = producto;
+            System.out.println("Producto " + producto + " insertado.");
+        }
+    }
+
+    // Buscar un producto
+    public String buscar(String producto) {
+        int index = hash(producto);
+        return table[index];
+    }
+}
+
+// Clase para el grafo que representa las rutas de estaciones
+class Grafo {
+    private Map<String, List<int[]>> adjList = new HashMap<>();
+
+    // Agregar una arista ponderada (con costo o distancia)
+    public void agregarArista(String origen, String destino, int peso) {
+        adjList.putIfAbsent(origen, new ArrayList<>());
+        adjList.get(origen).add(new int[]{peso, destino});
+    }
+
+    // Recorrido DFS iterativo (búsqueda en profundidad)
+    public void dfsIterativo(String inicio) {
+        Set<String> visitados = new HashSet<>();
+        Stack<String> stack = new Stack<>();
+        stack.push(inicio);
+
+        while (!stack.isEmpty()) {
+            String nodo = stack.pop();
+            if (!visitados.contains(nodo)) {
+                visitados.add(nodo);
+                System.out.print(nodo + " ");
+
+                // Agregar los vecinos no visitados
+                for (int[] vecino : adjList.getOrDefault(nodo, new ArrayList<>())) {
+                    if (!visitados.contains(vecino[1])) {
+                        stack.push(vecino[1]);
+                    }
+                }
+            }
+        }
+    }
+
+    // Recorrido BFS (búsqueda en amplitud)
+    public void bfs(String inicio) {
+        Set<String> visitados = new HashSet<>();
+        Queue<String> cola = new LinkedList<>();
+        cola.add(inicio);
+        visitados.add(inicio);
+
+        while (!cola.isEmpty()) {
+            String nodo = cola.poll();
+            System.out.print(nodo + " ");
+            for (int[] vecino : adjList.getOrDefault(nodo, new ArrayList<>())) {
+                if (!visitados.contains(vecino[1])) {
+                    cola.add(vecino[1]);
+                    visitados.add(vecino[1]);
+                }
+            }
+        }
+    }
+
+    // Algoritmo de Dijkstra (camino más corto)
+    public void dijkstra(String inicio) {
+        Map<String, Integer> distancias = new HashMap<>();
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
+        distancias.put(inicio, 0);
+        pq.add(new int[]{0, Integer.parseInt(inicio)});
+
+        while (!pq.isEmpty()) {
+            int[] nodo = pq.poll();
+            int distancia = nodo[0];
+            String actual = String.valueOf(nodo[1]);
+
+            for (int[] vecino : adjList.get(actual)) {
+                String vecinoNodo = String.valueOf(vecino[1]);
+                int peso = vecino[0];
+                int nuevaDistancia = distancia + peso;
+                if (nuevaDistancia < distancias.getOrDefault(vecinoNodo, Integer.MAX_VALUE)) {
+                    distancias.put(vecinoNodo, nuevaDistancia);
+                    pq.add(new int[]{nuevaDistancia, Integer.parseInt(vecinoNodo)});
+                }
+            }
+        }
+        distancias.forEach((key, value) -> System.out.println(key + ": " + value));
+    }
+
+    // Algoritmo de Prim (Árbol de expansión mínima)
+    public void prim(String inicio) {
+        Set<String> visitados = new HashSet<>();
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
+        pq.add(new int[]{0, Integer.parseInt(inicio)});
+
+        while (!pq.isEmpty()) {
+            int[] arista = pq.poll();
+            int nodo = arista[1];
+            if (visitados.contains(String.valueOf(nodo))) continue;
+            visitados.add(String.valueOf(nodo));
+
+            System.out.println("Nodo: " + nodo);
+            for (int[] vecino : adjList.getOrDefault(String.valueOf(nodo), new ArrayList<>())) {
+                if (!visitados.contains(String.valueOf(vecino[1]))) {
+                    pq.add(vecino);
+                }
+            }
+        }
+    }
+}
+
+// Clase principal que integra los productos y las rutas
+public class CiudadInteligente {
+    private HashTable productos;
+    private Grafo rutas;
+
+    public CiudadInteligente() {
+        productos = new HashTable(10);
+        rutas = new Grafo();
+    }
+
+    public void agregarProducto(String producto) {
+        productos.insertar(producto);
+    }
+
+    public void agregarRuta(String origen, String destino, int peso) {
+        rutas.agregarArista(origen, destino, peso);
+    }
+
+    public void mostrarProductos() {
+        System.out.println("Productos disponibles en la ciudad:");
+        System.out.println(productos.buscar("Producto1"));
+        System.out.println(productos.buscar("Producto2"));
+    }
+
+    public void mostrarRutas() {
+        System.out.println("Rutas de transporte en la ciudad:");
+        rutas.dfsIterativo("A");
+    }
+
+    public static void main(String[] args) {
+        CiudadInteligente ciudad = new CiudadInteligente();
+        
+        // Productos
+        ciudad.agregarProducto("Producto1");
+        ciudad.agregarProducto("Producto2");
+
+        // Rutas
+        ciudad.agregarRuta("A", "B", 10);
+        ciudad.agregarRuta("A", "C", 5);
+        ciudad.agregarRuta("B", "C", 3);
+
+        // Mostrar resultados de productos
+        ciudad.mostrarProductos();
+
+        // Mostrar rutas con DFS
+        ciudad.mostrarRutas();
+
+        // Mostrar el camino más corto usando Dijkstra
+        System.out.println("Camino más corto desde A:");
+        ciudad.rutas.dijkstra("A");
+
+        // Mostrar árbol de expansión mínima usando Prim
+        System.out.println("Árbol de expansión mínima desde A:");
+        ciudad.rutas.prim("A");
+    }
+}
+
+
+//Descripción del Código:
+HashTable:
+
+Implementa un sistema de tabla hash con hashing universal para almacenar productos, gestionando colisiones al insertar productos.
+Usa el método insertar para agregar productos y buscar para buscar un producto por su nombre.
+Grafo:
+
+Representa un grafo de estaciones de metro (nodos) y las rutas de transporte (aristas ponderadas, con distancias o costos).
+Implementa DFS, BFS, Dijkstra y Prim:
+DFS y BFS son métodos para explorar el grafo desde un nodo de inicio.
+Dijkstra encuentra el camino más corto entre dos nodos, y Prim calcula el árbol de expansión mínima para conectar todas las estaciones con el menor costo.
+CiudadInteligente:
+
+Integra las tablas hash y el grafo en un sistema único que gestiona tanto los productos disponibles en tiendas (mediante tablas hash) como las rutas de transporte público entre estaciones (mediante grafos).
+Se simula la adición de productos y rutas, y se muestran los resultados usando los algoritmos implementados.//
